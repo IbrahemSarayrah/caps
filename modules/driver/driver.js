@@ -1,24 +1,20 @@
 'use strict';
 
-const events = require('../../events.js');
+require('dotenv').config();
+const io = require('socket.io-client');
+const host = process.env.HOST;
+const connectionToDriver = io.connect(`${host}/caps`);
 
-require('../vendor/vendor.js');
+connectionToDriver.on('forPickup',forPickup);
 
-events.on('in-transit',inTransit);
-
-function inTransit(payload){
+function forPickup(payload){
   setTimeout(()=>{
     console.log(`DRIVER: picked up ${payload.orderId}`);
-    console.log( 
-      'EVENT',{
-        event:'in-transit',
-        time: new Date(),
-        payload:payload,
-      },
-    );
-  },1000);
+    connectionToDriver.emit('in-transit',payload);
+  },1500);
 
   setTimeout(()=>{
-    events.emit('delivered', payload);
+    console.log(`DRIVER: delivered ${payload.orderId}`);
+    connectionToDriver.emit('delivered', payload);
   },3000);
 }

@@ -1,19 +1,50 @@
 'use strict';
 
-const events= require('./events');
-const faker = require('faker');
 require('dotenv').config();
+const port = process.env.PORT || 3005;
+const io = require('socket.io')(port);
 
-require('./modules/driver/driver.js');
-require('./modules/vendor/vendor.js');
+const caps = io.of('/caps');
 
+caps.on('connection', (socket) => {
 
-setInterval(()=> {
-  let order = {
-    storeName: process.env.STORENAME,
-    orderId: faker.datatype.uuid(),
-    customerName: faker.name.findName(),
-    address: faker.address.streetAddress(),
-  };
-  events.emit('pickup',order);
-},5000);
+  ///// pickup
+  socket.on('pickup', pickup);
+
+  function pickup(payload) {
+    console.log(
+      'EVENT', {
+        event: 'pickup',
+        time: new Date(),
+        payload: payload,
+      });
+    caps.emit('forPickup', payload);
+  }
+
+  ///// in-transit
+  socket.on('in-transit', inTransit);
+
+  function inTransit(payload) {
+    console.log(
+      'EVENT', {
+        event: 'in-transit',
+        time: new Date(),
+        payload: payload,
+      });
+  }
+
+  ///// delivered
+  socket.on('delivered', delivered);
+
+  function delivered(payload) {
+    console.log(
+      'EVENT', {
+        event: 'delivered',
+        time: new Date(),
+        payload: payload,
+      },
+    );
+    caps.emit('vendorDelivered',payload);
+  }
+
+});

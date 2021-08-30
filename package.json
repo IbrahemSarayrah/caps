@@ -21,6 +21,8 @@
     "dotenv": "^10.0.0",
     "faker": "^5.5.3",
     "jest": "^27.1.0",
+    "socket.io": "^4.2.0",
+    "socket.io-client": "^4.2.0",
     "supertest": "^6.1.6"
   }
 }
