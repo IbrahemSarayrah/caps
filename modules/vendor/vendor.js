@@ -1,30 +1,26 @@
 'use strict';
 
-const events = require('../../events.js');
+const faker = require('faker');
+require('dotenv').config();
+const io = require('socket.io-client');
+const host = process.env.HOST;
+const connectionToVendor =io.connect(`${host}/caps`);
 
 
-events.on('pickup', pickup);
+setInterval(()=> {
+  let order = {
+    storeName: process.env.STORENAME,
+    orderId: faker.datatype.uuid(),
+    customerName: faker.name.findName(),
+    address: faker.address.streetAddress(),
+  };
+  connectionToVendor.emit('pickup',order);
+},5000);
 
-function pickup(payload){
-  console.log(
-    'EVENT',{
-      event:'pickup',
-      time: new Date(),
-      payload:payload,
-    });
-  events.emit('in-transit',payload);
-}
 
-events.on('delivered',delivered);
+connectionToVendor.on('vendorDelivered',delivered);
 
 function delivered(payload){
-  console.log(`DRIVER: delivered up ${payload.orderId}`);
   console.log(`VENDOR: Thank you for delivering ${payload.orderId}`);
-  console.log(
-    'EVENT',{
-      event:'delivered',
-      time: new Date(),
-      payload:payload,
-    },
-  );
+
 }

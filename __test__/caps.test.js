@@ -1,11 +1,15 @@
 'use strict';
 
-const events=require('../events');
 const faker=require('faker');
-require('../caps');
-require('../modules/driver/driver');
-require('../modules/vendor/vendor');
 require('dotenv').config();
+
+const port = 3005;
+const ioServer = require('socket.io')(port);
+
+const caps = ioServer.of('/caps');
+const io = require('socket.io-client');
+const host = process.env.HOST;
+const capsConnection = io.connect(`${host}/caps`);
 
 describe('test caps ', () => {
 
@@ -16,25 +20,30 @@ describe('test caps ', () => {
     address: faker.address.streetAddress(),
   };
 
-  let consoleSpy = jest.spyOn(console, 'log');
-
 
   test('test pickup  ',  async() => {
-    events.emit('pickup', payload);
     
-    await expect(consoleSpy).toHaveBeenCalled();
+    await expect(capsConnection.emit('pickup',payload)).toBeTruthy();
   });
 
-  test('test in-transit  ',async() => {
-    events.emit('in-transit', payload);
-
-    await expect(consoleSpy).toHaveBeenCalled();
-  });
-
-  test('test delivered  ',async () => {
-    events.emit('delivered', payload);
+  test('test forPickup  ',  async() => {
     
-    await  expect(consoleSpy).toHaveBeenCalled();
+    await expect(caps.emit('forPickup',payload)).toBe(true);
   });
+
+  test('test in-transit',  async() => {
+    
+    await expect(capsConnection.emit('in-transit',payload)).toBeTruthy();
+  });
+
+  test('test delivered ',  async() => {
+    
+    await expect(capsConnection.emit('delivered',payload)).toBeTruthy();
+  });
+
+  test('test vendorDelivered ',  async() => {
+    
+    await expect(caps.emit('vendorDelivered',payload)).toBe(true);
+  });
+
 });
-
