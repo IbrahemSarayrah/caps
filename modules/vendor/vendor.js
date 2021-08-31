@@ -17,10 +17,16 @@ setInterval(()=> {
   connectionToVendor.emit('pickup',order);
 },5000);
 
+connectionToVendor.on('addedOrderInQueue', ordersQueue);
+
+function ordersQueue(payload){
+  console.log(`VENDOR: Order in Queue :`, payload.orderId);
+
+}
 
 connectionToVendor.on('vendorDelivered',delivered);
 
 function delivered(payload){
-  console.log(`VENDOR: Thank you for delivering ${payload.orderId}`);
+  console.log(`VENDOR: Thank you for delivering :`, payload.id);
 
 }
